@@ -1,10 +1,10 @@
 # app/api/books.py
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from app.db.database import get_session
-from app.models.books import BookCreate, BookRead, BookUpdate
+from app.models.books import BookCreate, BookRead, BookUpdate, BookService
 from app.crud.books import crud_books
 # from app.services.book_service import BookService
 
@@ -98,6 +98,7 @@ def delete_book(
         db: Session = Depends(get_session)
 ):
     book = crud_books.get(db=db, id=book_id)
+    book_service = BookService()
     if not book:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -105,16 +106,16 @@ def delete_book(
         )
 
     # Check if the book has active borrows
-    '''
+    
     if book_service.has_active_borrows(db=db, book_id=book_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Cannot delete book with ID {book_id} because it has active borrows"
         )
-    '''
+    
     return crud_books.remove(db=db, id=book_id)
 
-'''
+
 @router.get("/{book_id}/available", response_model=dict)
 def check_book_availability(
         *,
@@ -122,6 +123,7 @@ def check_book_availability(
         db: Session = Depends(get_session)
 ):
     book = crud_books.get(db=db, id=book_id)
+    book_service = BookService()
     if not book:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -136,4 +138,3 @@ def check_book_availability(
         "available_copies": available_copies,
         "is_available": available_copies > 0
     }
-'''

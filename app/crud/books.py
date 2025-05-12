@@ -2,9 +2,9 @@ from typing import List, Optional
 from sqlmodel import Session, select
 from datetime import datetime
 
-from app.models.books import Book, BookCreate, BookUpdate
+from app.models.books import Book, BookCreate, BookUpdate, BookCategoryLink
 from app.models.authors import Author
-# from app.models.categories import Category
+from app.models.categories import Category
 from app.models.books import BookAuthorLink
 from app.crud.base import CRUDBase
 from app.utils.exceptions import LibraryException
@@ -79,8 +79,21 @@ class CRUDBook(CRUDBase[Book, BookCreate, BookUpdate]):
             db.add(link)
 
     def _set_categories(self, db: Session, book: Book, category_ids: List[int]) -> None:
-        # This is a stub method for now since Category model is commented out
-        pass
+        # Clear existing category links
+        statement = select(BookCategoryLink).where(BookCategoryLink.book_id == book.id)
+        existing_links = db.exec(statement).all()
+        for link in existing_links:
+            db.delete(link)
+        db.flush()
+
+        # Add new category links
+        for category_id in category_ids:
+            category = db.get(Category, category_id)
+            if not category:
+                raise LibraryException(f"Category with ID {category_id} not found")
+            link = BookCategoryLink(book_id=book.id, category_id=category_id)
+            db.add(link)
+
 
     def search_books(
             self,
@@ -102,8 +115,8 @@ class CRUDBook(CRUDBase[Book, BookCreate, BookUpdate]):
                                Book.id == BookAuthorLink.book_id).where(BookAuthorLink.author_id == author_id)
 
         # Category filtering would go here when implemented
-        # if category_id:
-        #     query = query.join(BookCategoryLink).where(BookCategoryLink.category_id == category_id)
+        if category_id:
+             query = query.join(BookCategoryLink).where(BookCategoryLink.category_id == category_id)
 
         query = query.offset(skip).limit(limit)
         results = db.exec(query).all()

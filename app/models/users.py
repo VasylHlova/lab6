@@ -1,4 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
+if TYPE_CHECKING:
+    from python_labs.lab6.library.app.models.borrowed_books import BorrowedBook
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import datetime
 from pydantic import EmailStr
@@ -40,4 +42,4 @@ class UserRead(UserBase):
     is_active: bool
 
     class Config:
-        orm_mode = True
+        form_attributes = True

@@ -43,4 +43,4 @@ class AuthorRead(AuthorBase):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        form_attributes = True

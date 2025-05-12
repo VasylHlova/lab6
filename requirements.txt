@@ -9,5 +9,7 @@ python-multipart
 pydantic
 python-dotenv
 pytest
+pytest-asyncio 
 httpx
 pydantic-settings
+pydantic[email]
