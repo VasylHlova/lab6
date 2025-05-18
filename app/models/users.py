@@ -18,6 +18,7 @@ class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     registration_date: datetime = Field(default_factory=datetime.utcnow)
     is_active: bool = Field(default=True)
+    hashed_password: str
 
     # Relationships
     borrowed_books: List["BorrowedBook"] = Relationship(
@@ -26,7 +27,11 @@ class User(UserBase, table=True):
 
 
 class UserCreate(UserBase):
-    pass
+    password: str
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
 
 
 class UserUpdate(SQLModel):
@@ -43,3 +48,10 @@ class UserRead(UserBase):
 
     class Config:
         form_attributes = True
+        
+class Token(SQLModel):
+    access_token: str
+    token_type: str
+    
+class TokenData(SQLModel):
+    email: str | None = None

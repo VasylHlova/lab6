@@ -20,7 +20,9 @@ class BorrowedBook(BorrowedBookBase, table=True):
     book_id: int = Field(foreign_key="book.id", ondelete="CASCADE")
         
 class BorrowedBookCreate(BorrowedBookBase):
-    return_date: Optional[datetime] = None    
+    return_date: Optional[datetime] = None
+    user_id: int
+    book_id: int    
     
 class BorrowedBookUpdate(SQLModel):
     borrowed_date: Optional[datetime] = None

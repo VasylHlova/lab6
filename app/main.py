@@ -1,7 +1,10 @@
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from fastapi.staticfiles import StaticFiles
 import time
+
+
 
 from app.utils.logger import setup_logging
 from app.api import books, authors, categories, users, borrowed_books, stats
@@ -10,6 +13,7 @@ from fastapi.responses import JSONResponse
 from fastapi.requests import Request
 from fastapi.exception_handlers import RequestValidationError
 from fastapi.exceptions import HTTPException
+
 
 logger = setup_logging()
 
@@ -90,6 +94,9 @@ app.include_router(borrowed_books.router, prefix="/api/borrowed_books", tags=["b
 app.include_router(stats.router, prefix="/api/stats", tags=["stats"])
 
 
+
 @app.get("/")
 def root():
     return {"message": "Welcome to Library Management System API"}
+
+

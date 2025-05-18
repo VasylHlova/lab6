@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     OVERDUE_FINE_RATE: float = 0.5
 
     LOG_DIR: str = "logs"
+    
+    SECRET_KEY: str 
+    JWT_ALGORITHM: str 
+    JWT_EXPIRATION_MINUTES: int
 
     class Config:
         env_file = ".env"

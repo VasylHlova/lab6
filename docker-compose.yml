@@ -10,6 +10,8 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    env_file:
+      - .env  
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/library_db
       - DATABASE_TEST_URL=postgresql://postgres:postgres@db:5432/library_test
@@ -33,7 +35,7 @@ services:
       retries: 5
   tests:
       build: .
-      command: pytest app/tests --disable-warnings -v
+      command: pytest app/tests --disable-warnings -v --maxfail=1
       environment:
         - DATABASE_URL=postgresql://postgres:postgres@db:5432/library_db
         - DATABASE_TEST_URL=postgresql://postgres:postgres@db:5432/library_test

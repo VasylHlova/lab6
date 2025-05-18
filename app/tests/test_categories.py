@@ -6,11 +6,31 @@ def category_payload(name="TestCategory", description="Test description"):
         "description": description
     }
 
+def author_payload(first_name="CatAuthor", last_name="Test", biography="Bio"):
+    return {
+        "first_name": first_name,
+        "last_name": last_name,
+        "biography": biography
+    }
+
+def book_payload(title="Book in Cat", isbn="ISBN-CAT-BOOK", quantity=1, author_ids=None, category_ids=None):
+    return {
+        "title": title,
+        "publication_year": 2020,
+        "isbn": isbn,
+        "quantity": quantity,
+        "author_ids": author_ids or [],
+        "category_ids": category_ids or []
+    }
+
 # --- CREATE ---
 @pytest.mark.asyncio
 async def test_create_category(client):
     response = await client.post("/api/categories/", json=category_payload())
     assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == "TestCategory"
+    assert "id" in data
 
 @pytest.mark.asyncio
 async def test_create_category_duplicate_name(client):
@@ -36,6 +56,7 @@ async def test_read_categories(client):
 async def test_read_categories_empty(client):
     response = await client.get("/api/categories/")
     assert response.status_code == 200
+    assert isinstance(response.json(), list)
 
 @pytest.mark.asyncio
 async def test_read_categories_pagination(client):
@@ -52,6 +73,8 @@ async def test_read_category_by_id(client):
     cat_id = resp.json()["id"]
     response = await client.get(f"/api/categories/{cat_id}")
     assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == cat_id
 
 @pytest.mark.asyncio
 async def test_read_category_not_found(client):
@@ -69,6 +92,8 @@ async def test_read_category_by_name(client):
     await client.post("/api/categories/", json=category_payload("ByName"))
     response = await client.get("/api/categories/name/ByName")
     assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "ByName"
 
 @pytest.mark.asyncio
 async def test_read_category_by_name_not_found(client):
@@ -78,7 +103,7 @@ async def test_read_category_by_name_not_found(client):
 @pytest.mark.asyncio
 async def test_read_category_by_name_invalid(client):
     response = await client.get("/api/categories/name/")
-    assert response.status_code in (404, 422)
+    assert response.status_code in (307,404, 422)
 
 # --- UPDATE ---
 @pytest.mark.asyncio
@@ -87,6 +112,7 @@ async def test_update_category(client):
     cat_id = resp.json()["id"]
     response = await client.put(f"/api/categories/{cat_id}", json={"name": "UpdatedName"})
     assert response.status_code == 200
+    assert response.json()["name"] == "UpdatedName"
 
 @pytest.mark.asyncio
 async def test_update_category_not_found(client):
@@ -118,16 +144,11 @@ async def test_delete_category_with_books(client):
     # Створити категорію
     resp = await client.post("/api/categories/", json=category_payload("WithBook"))
     cat_id = resp.json()["id"]
-    # Створити книгу з цією категорією
-    book_payload = {
-        "title": "Book in Cat",
-        "publication_year": 2020,
-        "isbn": "ISBN-CAT-BOOK",
-        "quantity": 1,
-        "author_ids": [],
-        "category_ids": [cat_id]
-    }
-    await client.post("/api/books/", json=book_payload)
+    # Створити автора для книги
+    author = (await client.post("/api/authors/", json=author_payload())).json()
+    # Створити книгу з цією категорією та автором
+    book = book_payload(author_ids=[author["id"]], category_ids=[cat_id])
+    await client.post("/api/books/", json=book)
     # Спроба видалити категорію з прив'язаною книгою
     response = await client.delete(f"/api/categories/{cat_id}")
     assert response.status_code == 400

@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from app.models.books import BookCategoryLink, Book
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, SQLModel, Relationship, UniqueConstraint
 from datetime import datetime, timezone
 
 
@@ -11,6 +11,7 @@ class CategoryBase(SQLModel):
     
 class Category(CategoryBase, table=True):
     __tablename__ = "category"
+    __table_args__ = (UniqueConstraint("name"),)
     
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

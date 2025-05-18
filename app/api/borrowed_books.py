@@ -4,14 +4,24 @@ from sqlmodel import Session
 from app.db.database import get_session
 from app.models.borrowed_books import BorrowedBookCreate, BorrowedBookRead, BorrowedBookUpdate
 from app.crud.borrowed_books import crud_borrowed
+from app.crud.users import crud_users   
+from app.crud.books import crud_books
 
 router = APIRouter()
 
 @router.post("/", response_model=BorrowedBookRead, status_code=status.HTTP_201_CREATED)
 def create_borrowed(
-        borrowed: BorrowedBookCreate,
-        db: Session = Depends(get_session)
+    borrowed: BorrowedBookCreate,
+    db: Session = Depends(get_session)
 ):
+    # Перевірка існування user
+    user = crud_users.get(db, borrowed.user_id)
+    if not user:
+        raise HTTPException(status_code=400, detail="User not found")
+    # Перевірка існування book
+    book = crud_books.get(db, borrowed.book_id)
+    if not book:
+        raise HTTPException(status_code=400, detail="Book not found")
     return crud_borrowed.create(db=db, obj_in=borrowed)
 
 @router.get("/", response_model=List[BorrowedBookRead])
@@ -75,5 +85,4 @@ def delete_borrowed(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Borrowed record with ID {borrowed_id} not found"
         )
-    return crud_borrowed.remove(db=db, db_obj=db_borrowed)
-    
+    return crud_borrowed.remove(db=db, id=borrowed_id)
