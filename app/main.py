@@ -93,7 +93,7 @@ app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(borrowed_books.router, prefix="/api/borrowed_books", tags=["borrowed_books"])
 app.include_router(stats.router, prefix="/api/stats", tags=["stats"])
 
-
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 @app.get("/")
 def root():

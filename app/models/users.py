@@ -27,6 +27,7 @@ class User(UserBase, table=True):
 
 
 class UserCreate(UserBase):
+    email: EmailStr
     password: str
 
     class Config:
